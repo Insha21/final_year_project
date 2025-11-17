@@ -12,7 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="G:\FYP\Model\Model.csproj" />
+    <ProjectReference Include="..\Model\Model.csproj" />
+
   </ItemGroup>
 
 </Project>
