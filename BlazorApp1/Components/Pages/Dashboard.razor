@@ -1,0 +1,112 @@
+@page "/dashboard"
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+
+<!-- Custom Navbar for Dashboard -->
+<header>
+    <nav class="dashboard-navbar">
+        <div class="navbar-right">
+            <button class="nav-btn logout-btn" @onclick="Logout">Logout</button>
+        </div>
+    </nav>
+</header>
+
+<div style="width:100vw; height:100vh; color:rgb(143, 138, 219); padding:80px 30px 30px; font-size:1.5rem;">
+    @if (showFillFormMessage)
+    {
+        <div>
+            <p>Fill out these details</p>
+            <button class="btn" @onclick="GoToForm">click</button>
+        </div>
+    }
+    else if (showUnderConsiderationMessage)
+    {
+        <p>Your application is under consideration. Please wait.</p>
+    }
+    else
+    {
+        <p>Welcome back!</p>
+    }
+</div>
+
+@code {
+    private bool showFillFormMessage = false;
+    private bool showUnderConsiderationMessage = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (!(user.Identity?.IsAuthenticated ?? false))
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("registered", out var registeredValue) && registeredValue == "true")
+        {
+            showFillFormMessage = true;
+        }
+        else if (query.TryGetValue("submitted", out var submittedValue) && submittedValue == "true")
+        {
+            showUnderConsiderationMessage = true;
+        }
+    }
+
+    private void GoToForm()
+    {
+        Navigation.NavigateTo("/formdoc");
+    }
+
+    private void Logout()
+    {
+        Navigation.NavigateTo("/logout", true);
+    }
+}
+
+
+
+
+
+<style>
+    .dashboard-navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 60px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 0 2rem;
+        background-color: #3b3bbf;
+        box-sizing: border-box;
+        z-index: 1000;
+    }
+
+    .navbar-right {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .nav-btn {
+        background: white;
+        color: #3b3bbf;
+        border: none;
+        border-radius: 20px;
+        padding: 0.5rem 1.2rem;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: background 0.2s, transform 0.1s;
+    }
+
+    .nav-btn:hover {
+        background: #f0f0f0;
+        transform: translateY(-1px);
+    }
+</style>

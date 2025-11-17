@@ -1,0 +1,44 @@
+@page "/login"
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+
+<div class="auth-container">
+    <div class="auth-left">
+        <h1>Name whatever</h1>
+        <p>Stay healthly</p>
+    </div>
+
+    <div class="auth-right">
+        <div class="auth-card">
+            <h2>Log in</h2>
+
+            @if (isLoading)
+            {
+                <p>Loading...</p>
+            }
+            else
+            {
+                <button class="google-btn" @onclick="LoginWithGoogle">
+                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" />
+                    <span>Login with Google</span>
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        isLoading = false;
+    }
+
+    private void LoginWithGoogle()
+    {
+        Navigation.NavigateTo("/login-google", true);
+    }
+}
+
