@@ -1,0 +1,6 @@
+cd BlazorApp1
+
+dotnet user-secrets init
+
+dotnet user-secrets set "Authentication:Google:ClientId" "YOUR_NEW_REAL_CLIENT_ID"
+dotnet user-secrets set "Authentication:Google:ClientSecret" "YOUR_NEW_REAL_CLIENT_SECRET"
