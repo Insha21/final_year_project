@@ -1,4 +1,5 @@
 cd /path/to/final_year_project
+BlazorApp1/BlazorApp1/appsettings.json
 
 # If .gitignore doesn't exist, create it; otherwise, open and add lines
 cat >> .gitignore << 'EOF'
