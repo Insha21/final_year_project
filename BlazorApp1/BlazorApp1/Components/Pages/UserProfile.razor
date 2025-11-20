@@ -1,0 +1,232 @@
+﻿@page "/userprofile/{ClientId}"
+@using Model
+@using BlazorApp1.Components.Layout
+@layout UserDashboardLayout
+@inject NavigationManager Navigation
+@inject IUService UserService
+
+<div class="profile-wrapper">
+    <div class="profile-card">
+        <div class="profile-header">
+            @*  <div class="avatar-wrapper">
+                 <img src="@(!string.IsNullOrEmpty(user.ProfileImageUrl) ? user.ProfileImageUrl : "https://via.placeholder.com/120")"
+                      alt="User" class="profile-pic" />
+                 <button class="edit-avatar" type="button" title="Change photo">
+                     <i class="fas fa-camera"></i>
+                 </button>
+             </div> *@
+            <h3 class="profile-title">Your Profile</h3>
+        </div>
+
+        <EditForm Model="@user" OnValidSubmit="Save">
+            <DataAnnotationsValidator />
+
+            <div class="form-row">
+                <label>Full Name</label>
+                <InputText class="form-input" @bind-Value="user.Name" />
+            </div>
+
+            <div class="form-row">
+                <label>Phone</label>
+                <InputText class="form-input" @bind-Value="user.Phone" />
+            </div>
+
+            <div class="form-row">
+                <label>Address</label>
+                <InputText class="form-input" @bind-Value="user.Address" />
+            </div>
+
+            <div class="form-row">
+                <label>Date of Birth</label>
+                <InputDate class="form-input" @bind-Value="user.DOB" />
+            </div>
+
+            <div class="form-row">
+                <label>Sex</label>
+                <InputSelect class="form-input" @bind-Value="user.Sex">
+                    <option value="">Select Sex</option>
+                    <option>Male</option>
+                    <option>Female</option>
+                    <option>Other</option>
+                </InputSelect>
+            </div>
+
+            <div class="form-row">
+                <label>Weight (kg)</label>
+                <InputText class="form-input" @bind-Value="user.Weight" />
+            </div>
+
+            <div class="form-row">
+                <label>Height (cm)</label>
+                <InputText class="form-input" @bind-Value="user.Height" />
+            </div>
+
+            <div class="form-row">
+                <label>Last Appointment</label>
+                <InputDate class="form-input" @bind-Value="user.LastAppointment" />
+            </div>
+
+            <div class="button-row">
+                <button type="button" class="back-btn" @onclick='() => Navigation.NavigateTo("/userdashboard")'>
+                    Back To Home
+                </button>
+                <button type="submit" class="save-btn">Save Changes</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string? ClientId { get; set; }
+
+    private User user = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(ClientId))
+        {
+            var existingUser = await UserService.GetUserByClientIdAsync(ClientId);
+            if (existingUser != null)
+                user = existingUser;
+            else
+                Console.WriteLine("⚠️ User not found.");
+        }
+    }
+
+    private async Task Save()
+    {
+        if (!string.IsNullOrEmpty(ClientId))
+        {
+            await UserService.UpdateUserByClientIdAsync(ClientId, user);
+            Console.WriteLine("✅ User profile updated successfully!");
+            Navigation.NavigateTo("/userdashboard");
+        }
+    }
+}
+
+
+<style>
+    /* Center card in page body */
+    .profile-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: start;
+        padding: 30px 20px;
+    }
+
+    /* Card Look */
+    .profile-card {
+        background: #fff;
+        width: 520px;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        padding: 36px 28px 28px;
+    }
+
+    /* Header + Avatar */
+    .profile-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .profile-title {
+        margin: 10px 0 20px;
+    }
+
+    .avatar-wrapper {
+        position: relative;
+        margin-bottom: 8px;
+    }
+
+    .profile-pic {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #fff;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .edit-avatar {
+        position: absolute;
+        bottom: 6px;
+        right: 8px;
+        background-color: #5b2dfc;
+        color: #fff;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .edit-avatar:hover {
+            background-color: #4720c8;
+        }
+
+    /* Form */
+    .form-row {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 16px;
+    }
+
+    label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 6px;
+    }
+
+    .form-input {
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 14px;
+        outline: none;
+        transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .form-input:focus {
+            border-color: #5b2dfc;
+            box-shadow: 0 0 0 2px rgba(91,45,252,0.1);
+        }
+
+    /* Buttons */
+    .button-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+
+    .back-btn, .save-btn {
+        border: none;
+        border-radius: 8px;
+        padding: 10px 22px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .back-btn {
+        background: #f3f3f3;
+        color: #333;
+    }
+
+        .back-btn:hover {
+            background: #e2e2e2;
+        }
+
+    .save-btn {
+        background: #5b2dfc;
+        color: #fff;
+    }
+
+        .save-btn:hover {
+            background: #4720c8;
+        }
+</style>

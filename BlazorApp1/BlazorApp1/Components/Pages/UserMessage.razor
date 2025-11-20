@@ -1,0 +1,158 @@
+﻿@* @page "/usermessages"
+@layout UserDashboardLayout
+@using BlazorApp1.Components.Layout
+@using Model
+@inject IMService MessageService
+@inject IJSRuntime JS
+
+<div class="chat-page">
+    <h2>💬 Messages</h2>
+
+    <div class="chat-window">
+        <div class="messages">
+            @if (messages == null)
+            {
+                <p>Loading messages...</p>
+            }
+            else if (messages.Count == 0)
+            {
+                <p>No messages yet. Start the conversation!</p>
+            }
+            else
+            {
+                @foreach (var m in messages)
+                {
+                    <div class="msg @(m.SenderId == currentUserId ? "me" : "them")">
+                        <strong>@m.SenderName</strong>: @m.Text
+                        <span class="time">@m.SentAt.ToShortTimeString()</span>
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="composer">
+            <input @bind="outgoing" placeholder="Type a message..." />
+            <button @onclick="SendMessage">Send</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Message>? messages;
+    private string outgoing = "";
+    private string? currentUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // ✅ Get user ID from local storage
+        currentUserId = await JS.InvokeAsync<string>("localStorage.getItem", "userId");
+
+        // ✅ Load messages from API
+        await LoadMessages();
+    }
+
+    private async Task LoadMessages()
+    {
+        try
+        {
+            messages = await MessageService.GetAllMessagesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error loading messages: {ex.Message}");
+            messages = new();
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(outgoing)) return;
+
+        try
+        {
+            // ✅ Create message object
+            var newMessage = new Message
+                {
+                    SenderId = currentUserId ?? "user1",
+                    SenderName = "You",
+                    ReceiverId = "doctor1", // You can replace this dynamically later
+                    Text = outgoing,
+                    SentAt = DateTime.Now
+                };
+
+            // ✅ Save message via API
+            await MessageService.AddMessageAsync(newMessage);
+
+            // ✅ Add to chat window immediately
+            messages?.Add(newMessage);
+            outgoing = "";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Error sending message: {ex.Message}");
+        }
+    }
+}
+
+<style>
+    .chat-page {
+        padding: 20px;
+    }
+
+    .chat-window {
+        background: #fff;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .messages {
+        height: 350px;
+        overflow-y: auto;
+        margin-bottom: 10px;
+    }
+
+    .msg {
+        margin: 5px 0;
+        padding: 8px;
+        border-radius: 6px;
+        max-width: 70%;
+    }
+
+        .msg.me {
+            background: #d1e7ff;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .msg.them {
+            background: #f1f1f1;
+        }
+
+    .time {
+        font-size: 11px;
+        color: #666;
+        margin-left: 8px;
+    }
+
+    .composer {
+        display: flex;
+        gap: 10px;
+    }
+
+        .composer input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .composer button {
+            background: #3b3bbf;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+        }
+</style>
+ *@
